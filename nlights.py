@@ -20,6 +20,7 @@ pi = pigpio.pi()
 username = ""
 activatedSet = set()
 
+
 def start():
 	# read username from file
 	if os.path.isfile(filename):
@@ -37,7 +38,7 @@ def start():
 
 	while True:
 		try:
-			load_values()
+			update_values()
 			time.sleep(0.5)
 		except KeyboardInterrupt:
 			sys.exit()
@@ -84,8 +85,8 @@ def username_exists():
 			return False
 
 
-# loads the values from the database
-def load_values():
+# loads the values from the database and sets them to the led strip
+def update_values():
 	data = {'id' : 2, 'username': username}
 	response = requests.post(url, data=json.dumps(data), headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
 	if response.status_code != 200:
@@ -118,5 +119,6 @@ def set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue):
 	pi.set_PWM_dutycycle(pin_red, value_red)
 	pi.set_PWM_dutycycle(pin_green, value_green)
 	pi.set_PWM_dutycycle(pin_blue, value_blue)
+
 
 start()
