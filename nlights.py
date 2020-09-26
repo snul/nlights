@@ -10,6 +10,7 @@ try:
 except ImportError:
 	print "Trying to Install required modules.\n"
 	os.system('python -m pip install requests pigpio')
+	time.sleep(2)
 	import requests
 	import pigpio
 
