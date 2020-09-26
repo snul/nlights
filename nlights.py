@@ -9,12 +9,14 @@ from datetime import datetime
 try:
     import requests
     import pigpio
+    from requests.exceptions import ConnectionError
 except ImportError:
     print "Trying to Install required modules.\n"
     os.system('python -m pip install requests pigpio')
     time.sleep(2)
     import requests
     import pigpio
+    from requests.exceptions import ConnectionError
 
 
 class Error(Exception):
@@ -120,32 +122,34 @@ def username_exists():
 
 # loads the values from the database and sets them to the led strip
 def update_values():
-    data = {'id': 2, 'username': username}
-    response = requests.post(url, data=json.dumps(data),
-                             headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
-    if response.status_code != 200:
-        raise ServerError("Server seems to be unresponsive at the moment.")
-    else:
-        json_response = response.json()
-        if json_response['status'] == 0:
-            for rgbRow in json_response['values']:
-                pin_red = rgbRow['pinRed']
-                pin_green = rgbRow['pinGreen']
-                pin_blue = rgbRow['pinBlue']
-                value_red = rgbRow['red']
-                value_green = rgbRow['green']
-                value_blue = rgbRow['blue']
-
-                # check if they were enabled and set values to 0 in case they were disabled
-                if rgbRow['status'] == 0:
-                    if rgbRow['id'] in activatedSet:
-                        set_rgb(pin_red, pin_green, pin_blue, 0, 0, 0)
-                        activatedSet.discard(rgbRow['id'])
-                else:
-                    activatedSet.add(rgbRow['id'])
-                    set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
+    try:
+        data = {'id': 2, 'username': username}
+        response = requests.post(url, data=json.dumps(data), headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
+        if response.status_code != 200:
+            raise ServerError("Server seems to be unresponsive at the moment.")
         else:
-            raise InvalidResponseError("Invalid server response status code.")
+            json_response = response.json()
+            if json_response['status'] == 0:
+                for rgbRow in json_response['values']:
+                    pin_red = rgbRow['pinRed']
+                    pin_green = rgbRow['pinGreen']
+                    pin_blue = rgbRow['pinBlue']
+                    value_red = rgbRow['red']
+                    value_green = rgbRow['green']
+                    value_blue = rgbRow['blue']
+
+                    # check if they were enabled and set values to 0 in case they were disabled
+                    if rgbRow['status'] == 0:
+                        if rgbRow['id'] in activatedSet:
+                            set_rgb(pin_red, pin_green, pin_blue, 0, 0, 0)
+                            activatedSet.discard(rgbRow['id'])
+                    else:
+                        activatedSet.add(rgbRow['id'])
+                        set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
+            else:
+                raise InvalidResponseError("Invalid server response status code.")
+    except ConnectionError:
+        raise ServerError("Server seems to be unresponsive at the moment.")
 
 
 # sets the given rgb values to the given rgb pins
