@@ -11,7 +11,7 @@ try:
     import pigpio
     from requests.exceptions import ConnectionError
 except ImportError:
-    print "Trying to Install required modules.\n"
+    print("Trying to Install required modules.")
     os.system('python -m pip install requests pigpio')
     time.sleep(2)
     import requests
@@ -42,21 +42,22 @@ activatedSet = set()
 
 
 def start():
-    error_occurred = False
+    error_counter = 0
     init()
 
     while True:
         try:
-            update_values()
-            if error_occurred:
-                log("Reconnected.")
-                error_occurred = False
             time.sleep(0.5)
+            update_values()
+            if error_counter != 0:
+                log("Reconnected.")
+                error_counter = 0
         except KeyboardInterrupt:
             sys.exit()
         except (ServerError, InvalidResponseError) as e:
-            if not error_occurred:
-                error_occurred = True
+            # do not log occasional connection errors
+            error_counter += 1
+            if error_counter > 5:
                 log(e.message)
         except:
             traceback.print_exc()
@@ -123,7 +124,7 @@ def username_exists():
 # loads the values from the database and sets them to the led strip
 def update_values():
     try:
-        data = {'id': 2, 'username': username}
+        data = {'id': 12, 'username': username}
         response = requests.post(url, data=json.dumps(data), headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
         if response.status_code != 200:
             raise ServerError("Server seems to be unresponsive at the moment.")
