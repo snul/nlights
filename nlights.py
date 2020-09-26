@@ -3,6 +3,8 @@ import sys
 import json
 import time
 import traceback
+from datetime import datetime
+
 
 try:
     import requests
@@ -44,14 +46,16 @@ def start():
     while True:
         try:
             update_values()
-            error_occurred = False
+            if error_occurred:
+                log("Reconnected.")
+                error_occurred = False
             time.sleep(0.5)
         except KeyboardInterrupt:
             sys.exit()
         except (ServerError, InvalidResponseError) as e:
             if not error_occurred:
                 error_occurred = True
-                print(e.message)
+                log(e.message)
         except:
             traceback.print_exc()
 
@@ -66,7 +70,7 @@ def init():
         f.close()
         # check if username is valid
         if username_exists():
-            print("nLights started successfully")
+            log("nLights started successfully")
         else:
             setup()
     else:
@@ -94,7 +98,7 @@ def setup():
     f.close()
 
     print("")
-    print("nLights started successfully")
+    log("nLights started successfully")
     print("Restart the application using the start.sh script to automatically start nLights in the background.")
 
 
@@ -104,7 +108,7 @@ def username_exists():
     response = requests.post(url, data=json.dumps(data),
                              headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
     if response.status_code != 200:
-        print('Server error, please try again later.')
+        log('Server error, please try again later.')
         return False
     else:
         json_response = response.json()
@@ -149,6 +153,12 @@ def set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue):
     pi.set_PWM_dutycycle(pin_red, value_red)
     pi.set_PWM_dutycycle(pin_green, value_green)
     pi.set_PWM_dutycycle(pin_blue, value_blue)
+
+
+def log(message):
+    dt = datetime.utcnow()
+    timestamp = dt.strftime('%Y-%m-%d %H:%M:%S')
+    print(timestamp + " (UTC): " + message)
 
 
 start()
