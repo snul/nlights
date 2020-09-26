@@ -124,7 +124,7 @@ def username_exists():
 # loads the values from the database and sets them to the led strip
 def update_values():
     try:
-        data = {'id': 12, 'username': username}
+        data = {'id': 2, 'username': username}
         response = requests.post(url, data=json.dumps(data), headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
         if response.status_code != 200:
             raise ServerError("Server seems to be unresponsive at the moment.")
