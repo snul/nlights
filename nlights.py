@@ -50,7 +50,8 @@ def start():
             time.sleep(0.5)
             update_values()
             if error_counter != 0:
-                log("Reconnected.")
+                if error_counter > 5:
+                    log("Reconnected.")
                 error_counter = 0
         except KeyboardInterrupt:
             sys.exit()
