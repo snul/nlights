@@ -116,7 +116,7 @@ def username_exists():
         return False
     else:
         json_response = response.json()
-        if json_response['status'] == 0:
+        if json_response['status'] == 1:
             return True
         else:
             return False
@@ -131,7 +131,7 @@ def update_values():
             raise ServerError("Server seems to be unresponsive at the moment.")
         else:
             json_response = response.json()
-            if json_response['status'] == 0:
+            if json_response['status'] == 1:
                 for rgbRow in json_response['values']:
                     pin_red = rgbRow['pinRed']
                     pin_green = rgbRow['pinGreen']
