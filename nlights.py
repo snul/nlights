@@ -40,6 +40,13 @@ pi = pigpio.pi()
 username = ""
 activatedSet = set()
 
+# message ids for json requests
+MSG_ID_LOAD_VALUES = 2
+MSG_ID_CHECK_IF_USERNAME_EXISTS = 3
+
+SERVER_ERROR_MESSAGE = "Server seems to be unresponsive at the moment, please try again later or contact us: " \
+                       "support@nlights.at"
+
 
 def start():
     error_counter = 0
@@ -108,27 +115,33 @@ def setup():
 
 # checks if a username exists and is valid
 def username_exists():
-    data = {'id': 3, 'username': username}
-    response = requests.post(url, data=json.dumps(data),
-                             headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
-    if response.status_code != 200:
-        log('Server error, please try again later.')
-        return False
-    else:
-        json_response = response.json()
-        if json_response['status'] == 1:
-            return True
+    try:
+        data = {'id': MSG_ID_CHECK_IF_USERNAME_EXISTS, 'username': username}
+        response = requests.post(url, data=json.dumps(data),
+                                 headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
+        if response.status_code != 200:
+            raise ServerError(SERVER_ERROR_MESSAGE)
         else:
-            return False
+            json_response = response.json()
+            if json_response['status'] == 1:
+                return True
+            else:
+                return False
+    except ConnectionError:
+        raise ServerError(SERVER_ERROR_MESSAGE)
+    except ValueError:
+        # response.json() failed
+        raise ServerError(SERVER_ERROR_MESSAGE)
 
 
 # loads the values from the database and sets them to the led strip
 def update_values():
     try:
-        data = {'id': 2, 'username': username}
-        response = requests.post(url, data=json.dumps(data), headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
+        data = {'id': MSG_ID_LOAD_VALUES, 'username': username}
+        response = requests.post(url, data=json.dumps(data),
+                                 headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
         if response.status_code != 200:
-            raise ServerError("Server seems to be unresponsive at the moment.")
+            raise ServerError(SERVER_ERROR_MESSAGE)
         else:
             json_response = response.json()
             if json_response['status'] == 1:
@@ -151,7 +164,10 @@ def update_values():
             else:
                 raise InvalidResponseError("Invalid server response status code.")
     except ConnectionError:
-        raise ServerError("Server seems to be unresponsive at the moment.")
+        raise ServerError(SERVER_ERROR_MESSAGE)
+    except ValueError:
+        # response.json() failed
+        raise ServerError(SERVER_ERROR_MESSAGE)
 
 
 # sets the given rgb values to the given rgb pins
