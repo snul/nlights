@@ -9,14 +9,14 @@ from datetime import datetime
 try:
     import requests
     import pigpio
-    from requests.exceptions import ConnectionError
+    from requests.exceptions import ConnectionError, Timeout
 except ImportError:
     print("Trying to Install required modules.")
     os.system('python -m pip install requests pigpio')
     time.sleep(2)
     import requests
     import pigpio
-    from requests.exceptions import ConnectionError
+    from requests.exceptions import ConnectionError, Timeout
 
 
 class Error(Exception):
@@ -139,7 +139,7 @@ def update_values():
     try:
         data = {'id': MSG_ID_LOAD_VALUES, 'username': username}
         response = requests.post(url, data=json.dumps(data),
-                                 headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
+                                 headers={'Content-type': 'application/json', 'Accept': 'text/plain'}, timeout=1)
         if response.status_code != 200:
             raise ServerError(SERVER_ERROR_MESSAGE)
         else:
@@ -163,7 +163,7 @@ def update_values():
                         set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
             else:
                 raise InvalidResponseError("Invalid server response status code.")
-    except ConnectionError:
+    except (ConnectionError, Timeout):
         raise ServerError(SERVER_ERROR_MESSAGE)
     except ValueError:
         # response.json() failed
