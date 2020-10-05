@@ -65,7 +65,8 @@ def start():
         except (ServerError, InvalidResponseError) as e:
             # do not log occasional connection errors
             error_counter += 1
-            if error_counter > 5:
+            if error_counter > 15:
+                # more than 15 sec disconnected
                 log(e.message)
         except:
             traceback.print_exc()
