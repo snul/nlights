@@ -57,7 +57,7 @@ def start():
             time.sleep(0.5)
             update_values()
             if error_counter != 0:
-                if error_counter > 15:
+                if error_counter >= 15:
                     log("Reconnected.")
                 error_counter = 0
         except KeyboardInterrupt:
@@ -65,7 +65,7 @@ def start():
         except (ServerError, InvalidResponseError) as e:
             # do not log occasional connection errors
             error_counter += 1
-            if error_counter > 15:
+            if error_counter == 15:
                 # more than 15 sec disconnected
                 log(e.message)
         except:
