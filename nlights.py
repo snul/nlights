@@ -39,6 +39,7 @@ filename = "user.data"
 pi = pigpio.pi()
 username = ""
 activatedSet = set()
+version = 1.2
 
 # message ids for json requests
 MSG_ID_LOAD_VALUES = 2
@@ -138,7 +139,7 @@ def username_exists():
 # loads the values from the database and sets them to the led strip
 def update_values():
     try:
-        data = {'id': MSG_ID_LOAD_VALUES, 'username': username}
+        data = {'id': MSG_ID_LOAD_VALUES, 'username': username, 'version': version}
         response = requests.post(url, data=json.dumps(data),
                                  headers={'Content-type': 'application/json', 'Accept': 'text/plain'}, timeout=1)
         if response.status_code != 200:
