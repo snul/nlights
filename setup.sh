@@ -14,6 +14,6 @@ else
     sudo pigpiod
     python3 nlights.py
   else
-    echo "please install the packages python, python-pip, pigpio, screen"
+    echo "please install the packages python3, python3-pip, pigpio, screen"
   fi
 fi
