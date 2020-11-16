@@ -30,7 +30,7 @@ filename = "user.data"
 pi = pigpio.pi()
 username = ""
 activatedSet = set()
-version = 1.3
+version = 1.4
 
 # message ids for json requests
 MSG_ID_LOAD_VALUES = 2

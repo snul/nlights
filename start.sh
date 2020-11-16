@@ -19,7 +19,7 @@ else
   echo 'git not installed, please install git for updates.'
 fi
 
-python3 -m pip install pigpio requests
+sudo python3 -m pip install pigpio requests
 sudo pigpiod
-sudo screen -amdS nLights python3 nlights.py
+sudo screen -amdS nLights sudo python3 nlights.py
 echo 'nLights successfully started as new screen session in the background.'
