@@ -1,22 +1,13 @@
+import json
 import os
 import sys
-import json
 import time
 import traceback
 from datetime import datetime
 
-
-try:
-    import requests
-    import pigpio
-    from requests.exceptions import ConnectionError, Timeout
-except ImportError:
-    print("Trying to Install required modules.")
-    os.system('python -m pip install requests pigpio')
-    time.sleep(2)
-    import requests
-    import pigpio
-    from requests.exceptions import ConnectionError, Timeout
+import pigpio
+import requests
+from requests.exceptions import ConnectionError, Timeout
 
 
 class Error(Exception):
