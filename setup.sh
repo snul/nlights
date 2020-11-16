@@ -1,17 +1,19 @@
 if [ -f "user.data" ]; then
-	rm user.data
+  rm user.data
 fi
 
 if [ -n "$(command -v yum)" ]; then
-	yum install python python-pip pigpio screen
-	sudo pigpiod
-	python nlights.py
+  sudo yum install python3 python3-pip pigpio screen
+  python3 -m pip install pigpio requests
+  sudo pigpiod
+  python3 nlights.py
 else
-	if [ -n "$(command -v apt-get)" ]; then
-		sudo apt-get -y install python python-pip pigpio screen
-		sudo pigpiod
-		python nlights.py
-	else
-		echo "please install the packages python, python-pip, pigpio, screen"
-	fi
+  if [ -n "$(command -v apt-get)" ]; then
+    sudo apt-get -y install python3 python3-pip pigpio screen
+    python3 -m pip install pigpio requests
+    sudo pigpiod
+    python3 nlights.py
+  else
+    echo "please install the packages python, python-pip, pigpio, screen"
+  fi
 fi
