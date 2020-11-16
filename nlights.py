@@ -30,7 +30,7 @@ filename = "user.data"
 pi = pigpio.pi()
 username = ""
 activatedSet = set()
-version = 1.4
+version = 1.5
 
 # message ids for json requests
 MSG_ID_LOAD_VALUES = 2
@@ -92,7 +92,7 @@ def setup():
 
     # check if username exists
     while not username_exists():
-        username = raw_input("Username: ")
+        username = input("Username: ")
         if not username_exists():
             print('Username does not exist, please try again or create a new one with the nLights App from the '
                   'AppStore or PlayStore.')
