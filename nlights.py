@@ -25,7 +25,7 @@ class InvalidResponseError(Error):
     pass
 
 
-url = "http://api.nlights.at/"
+url = "https://api.nlights.at/"
 filename = "user.data"
 pi = pigpio.pi()
 username = ""
