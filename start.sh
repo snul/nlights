@@ -19,7 +19,16 @@ else
   echo 'git not installed, please install git for updates.'
 fi
 
+# delete screen log
+sudo rm -f screenlog.0
+
+# install packages
+sudo python3 -m pip install --upgrade pip
 sudo python3 -m pip install pigpio requests
+
+# start pigpiod, sudo required
 sudo pigpiod
-sudo screen -amdS nLights sudo python3 nlights.py
+
+# start nLights
+sudo screen -amdSL nLights sudo python3 nlights.py
 echo 'nLights successfully started as new screen session in the background.'
