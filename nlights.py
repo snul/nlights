@@ -7,20 +7,16 @@ from datetime import datetime
 
 import pigpio
 import requests
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError, ConnectTimeout, Timeout
+from urllib3.exceptions import ConnectTimeoutError, MaxRetryError
 
 
-class Error(Exception):
-    # base class for custom exceptions
-    pass
-
-
-class ServerError(Error):
+class ServerError(Exception):
     # invalid response status code
     pass
 
 
-class InvalidResponseError(Error):
+class InvalidResponseError(Exception):
     # correct status code but invalid response or not found
     pass
 
@@ -30,7 +26,7 @@ filename = "user.data"
 pi = pigpio.pi()
 username = ""
 activatedSet = set()
-version = 1.5
+version = 1.6
 
 # message ids for json requests
 MSG_ID_LOAD_VALUES = 2
@@ -54,12 +50,13 @@ def start():
                 error_counter = 0
         except KeyboardInterrupt:
             sys.exit()
-        except (ServerError, InvalidResponseError) as e:
+        except (ServerError, InvalidResponseError):
             # do not log occasional connection errors
+            # e.g. timeouts can occur if running 24/7
             error_counter += 1
             if error_counter == 15:
                 # more than 15 sec disconnected
-                log(e.message)
+                log(SERVER_ERROR_MESSAGE)
         except:
             traceback.print_exc()
 
@@ -113,7 +110,7 @@ def username_exists():
         response = requests.post(url, data=json.dumps(data),
                                  headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
         if response.status_code != 200:
-            raise ServerError(SERVER_ERROR_MESSAGE)
+            raise ServerError()
         else:
             json_response = response.json()
             if json_response['status'] == 1:
@@ -121,10 +118,10 @@ def username_exists():
             else:
                 return False
     except ConnectionError:
-        raise ServerError(SERVER_ERROR_MESSAGE)
+        raise ServerError()
     except ValueError:
         # response.json() failed
-        raise ServerError(SERVER_ERROR_MESSAGE)
+        raise ServerError()
 
 
 # loads the values from the database and sets them to the led strip
@@ -134,7 +131,7 @@ def update_values():
         response = requests.post(url, data=json.dumps(data),
                                  headers={'Content-type': 'application/json', 'Accept': 'text/plain'}, timeout=1)
         if response.status_code != 200:
-            raise ServerError(SERVER_ERROR_MESSAGE)
+            raise ServerError()
         else:
             json_response = response.json()
             if json_response['status'] == 1:
@@ -155,12 +152,13 @@ def update_values():
                         activatedSet.add(rgbRow['id'])
                         set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
             else:
-                raise InvalidResponseError("Invalid server response status code.")
-    except (ConnectionError, Timeout):
-        raise ServerError(SERVER_ERROR_MESSAGE)
+                # invalid server response code
+                raise InvalidResponseError()
+    except (ConnectionError, ConnectTimeoutError, ConnectTimeout, MaxRetryError, Timeout):
+        raise ServerError()
     except ValueError:
         # response.json() failed
-        raise ServerError(SERVER_ERROR_MESSAGE)
+        raise ServerError()
 
 
 # sets the given rgb values to the given rgb pins
