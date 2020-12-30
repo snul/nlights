@@ -109,14 +109,7 @@ def username_exists():
         data = {'id': MSG_ID_CHECK_IF_USERNAME_EXISTS, 'username': username}
         response = requests.post(url, data=json.dumps(data),
                                  headers={'Content-type': 'application/json', 'Accept': 'text/plain'})
-        if response.status_code != 200:
-            raise ServerError()
-        else:
-            json_response = response.json()
-            if json_response['status'] == 1:
-                return True
-            else:
-                return False
+        return response.status_code == 200
     except ConnectionError:
         raise ServerError()
     except ValueError:
@@ -131,29 +124,25 @@ def update_values():
         response = requests.post(url, data=json.dumps(data),
                                  headers={'Content-type': 'application/json', 'Accept': 'text/plain'}, timeout=1)
         if response.status_code != 200:
-            raise ServerError()
+            raise InvalidResponseError()
         else:
             json_response = response.json()
-            if json_response['status'] == 1:
-                for rgbRow in json_response['values']:
-                    pin_red = rgbRow['pinRed']
-                    pin_green = rgbRow['pinGreen']
-                    pin_blue = rgbRow['pinBlue']
-                    value_red = rgbRow['red']
-                    value_green = rgbRow['green']
-                    value_blue = rgbRow['blue']
+            for rgbRow in json_response['values']:
+                pin_red = rgbRow['pinRed']
+                pin_green = rgbRow['pinGreen']
+                pin_blue = rgbRow['pinBlue']
+                value_red = rgbRow['red']
+                value_green = rgbRow['green']
+                value_blue = rgbRow['blue']
 
-                    # check if they were enabled and set values to 0 in case they were disabled
-                    if rgbRow['status'] == 0:
-                        if rgbRow['id'] in activatedSet:
-                            set_rgb(pin_red, pin_green, pin_blue, 0, 0, 0)
-                            activatedSet.discard(rgbRow['id'])
-                    else:
-                        activatedSet.add(rgbRow['id'])
-                        set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
-            else:
-                # invalid server response code
-                raise InvalidResponseError()
+                # check if they were enabled and set values to 0 in case they were disabled
+                if rgbRow['status'] == 0:
+                    if rgbRow['id'] in activatedSet:
+                        set_rgb(pin_red, pin_green, pin_blue, 0, 0, 0)
+                        activatedSet.discard(rgbRow['id'])
+                else:
+                    activatedSet.add(rgbRow['id'])
+                    set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
     except (ConnectionError, ConnectTimeoutError, ConnectTimeout, MaxRetryError, Timeout):
         raise ServerError()
     except ValueError:
