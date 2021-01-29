@@ -21,12 +21,14 @@ class InvalidResponseError(Exception):
     pass
 
 
-url = "https://api.nlights.at/"
+version = 1.8
 filename = "user.data"
-pi = pigpio.pi()
+url = "https://api.nlights.at/"
+
+delay = 500
 username = ""
+pi = pigpio.pi()
 activatedSet = set()
-version = 1.7
 
 # message ids for json requests
 MSG_ID_LOAD_VALUES = 2
@@ -42,7 +44,7 @@ def start():
 
     while True:
         try:
-            time.sleep(0.5)
+            time.sleep(delay / 1000)
             update_values()
             if error_counter != 0:
                 if error_counter >= 15:
@@ -143,10 +145,10 @@ def update_values():
                 else:
                     activatedSet.add(rgbRow['id'])
                     set_rgb(pin_red, pin_green, pin_blue, value_red, value_green, value_blue)
-    except (ConnectionError, ConnectTimeoutError, ConnectTimeout, MaxRetryError, Timeout):
-        raise ServerError()
-    except ValueError:
-        # response.json() failed
+
+            global delay
+            delay = json_response['nextUpdate']
+    except (ConnectionError, ConnectTimeoutError, ConnectTimeout, MaxRetryError, Timeout, ValueError):
         raise ServerError()
 
 
